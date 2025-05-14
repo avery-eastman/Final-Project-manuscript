@@ -1,0 +1,331 @@
+---
+title: Final Project
+authors:
+  - name: Avery Eastman
+    affiliation: CSU
+    roles: writing
+    corresponding: true
+  - name: Ava Zelenz
+    affiliation: CSU
+    roles: writing
+    corresponding: false
+    
+bibliography: references.bib
+csl: apa.csl
+format: html
+execute:
+  echo: true
+---
+
+# **Sustainable Soil Management Practices and Impacts**
+
+## Abstract
+
+Industrial agriculture is threatened by a changing climate. With the current methods under threat and the environmental factors becoming increasingly difficult to mitigate, solutions are needed. One area of agriculture that is taking heavy damage is soil health. With pre-existing farming methods like tilling, fertilizer, and pesticide use, soil health is in steady decline. In this study, we identify the croplands of Bismarck, North Dakota, and determine how sustainable agriculture methods affect soil quality. Using indicators like soil quality index scores (SQIs),  Beta-Glucosidase Activity (BGLU), and Bacteria Maker FAME (BACSUM), we utilized a machine learning workflow to determine how the practices affect soil health. Our results suggest that cover cropping, diversified rotations, and grazed continuous cropping support better soil health compared to fallow-based methods. Traditional rotation practices do not show an increase in soil recovery and restoration of organic matter. While these practices are not detrimental to existing agricultural land, the switch to more sustainable alternatives is imperative for adapting to the outcomes of climate change. Recognizing how soil health responds to different management practices can serve as a starting point for further research in different agrosystems outside of North Dakota.
+
+## Introduction/Hypothesis
+
+As climate change worsens, attention to industrial agriculture increases. The specific methods of the industry, like tilling, monocropping, and fertilizer and pesticide use, pose a threat to soil health (@belete2023effect). These practices, while they may be efficient and produce steady yields, have further environmental implications that are not sustainable in the long run (@worley2024truth). Soil health is critical to food and water security, as well as overall ecosystem function. In ecosystems, soil organic carbon (SOC) is fundamental in the processes of water permeation, nutrient retention, and aggregate stability. As Zhao et al. state, “Even a small change in the SOC can substantially affect not only the climate but also the stability of ecosystems, because of its decisive role in the exchange of carbon between the soil and atmosphere and plant growth/food production”(@zhao2021projected). Studies have also supported that areas with less anthropogenic activity show low bulk density within the soil. (@cardoso2013soil). Additionally, areas with less human activity tend to have a better accumulation of soil particles, therefore a better structure within the soil. This improved structure is vital for all ecosystems as it allows the permeability for water, air, and roots to be eased, helping them thrive.
+
+There needs to be a shift to sustainable agriculture methods to restore and protect soil health. Sustaining soil health while simultaneously sustaining crop yields is the goal that the agriculture industry should be working towards. In addition, (@katherasala2024unveiling) emphasize the importance of educating farmers on the harmful effect of current practices and alternative methods. Despite the need for sustainable practices, there is cause for concern and uncertainty towards transitioning to more sustainable agriculture, with most concerns being centered around changes in crop yields and production efficiency. However, (@miner2020soil) provides research showing that under no-tilling conditions, yield declines can be partially mitigated when no-till conditions are combined with residue retention and crop rotation practices. These concerns can also be minimized with the use of soil quality indices (SQIs). SQIs are utilized to measure and monitor soil function and health through chemical and biological properties (@chaudhry2024evaluating). With practices like crop rotation, residue retention, cover cropping, and livestock integration the SQIs can be determined to monitor soil health with these treatments and ensure it is beneficial for agricultural development. This study looked at different models to determine if crop rotation systems that integrate livestock and cover crops in the Northern Great Plains will result in significantly higher soil quality index scores in relation to microbial activity.
+
+## Methods
+
+The data used for our research was collected in the USDA-ARS Northern Great Plains Research Lab from the years 2014-2016. We accessed this data through [data.gov](http://data.gov) from the metadata set called “Conservation Practices Induce Tradeoffs in Soil Function: Observations from the Northern Great Plains” (@liebig2022conservation). We downloaded and utilized two of its dataset. The first, SES_On_Station_Intergrative Measures_SMAF, contained different soil scores across different land use types and treatment systems. While the second one, SES_On_Station_Soil_Properties_Near Surface, included measurements for various soil properties for each land use and treatment type. Both of which reflected near-surface (0-5 cm) depth data. After downloading the datasets, we created a new project in RStudio. Once created, we read in each csv file using the read_csv() function, saving each raw dataset to an object. The datasets were then inspected for any shared columns using the glimps() function. We were then able to join the two datasets by their overlapping columns "STUDY", "LTEXP", "TRT", "LAND_USE", "YEAR", "REP", "DEPTH".
+
+Through Exploratory Data Analysis, we were able to understand the merged data structure. This included identifying outliers, creating visualizations, and getting summary statistics. First we used glimps() to check data types, dimensions, and missing values. To further understand what values were missing. There were two columns that showed a high percentage of missing values, TOC and VESS, to address this we filtered the columns out and created a new dataset with the cleaned data. Then, to view some statistical summaries on our data we used the skim() function, allowing us to view the general trend in mean, standard deviation, and skewness for each variable. As a preprocessor step for correlation analysis, we created a new dataset with only numeric variables. This separation of numeric data allowed us to narrow down the variables that had a strong correlation to the soil quality index score (SMAFQI) variable and to each other. Both vis_cor() and cor() were used for this process. Due to their high correlation with each other, WSA, UREASE, SMAFQI, BGLU, TFAME, PHOS, and BACSUM were all selected to do a separate correlation analysis on. We then visualized each variable’s distribution using the gghistogram() function. Both Beta-Glucosidase Activity (BGLU) and Bacteria Maker FAME (BACSUM) were then selected to complete our remaining research on.
+
+For categorical analysis, we used a box plot, density plot, and violin plots to visualize the relationship between each SMAFQI, BGLU, and BACSUM and treatment (LAND_USE) or management type (TRT). Next, to test for normality in SMAFQI, BGLU, and BACSUM, we used the Shapiro-Wilk normality test. The results informed us that our data did not follow a normal distribution. To help normalize the data, we log-transformed each variable. To verify that the log transformation worked, we used the Shapiro-Wilk normality test again, using the transformed data. Additionally, we viewed the transformation visually using gghistogram(). Both BGLU and BACSUM appeared normally distributed, while SMAFQI still remained skewed. Thus, Pearson's correlation test was used to test BGLU and BACSUM individually, whereas the Spearman test was used to assess the correlation of the variables without log transforming them. Furthermore, to ensure that SMAFQI, BGLU, and BACSUM were correlated to the different management practices, the Kruskal-Wallis rank sum test was used. To visualize the log-log relationship between BGLU and BACSUM, and view how well both variables predict SMAFQI change, an XY plot of BGLU and BACSUM was made. The scale_color_viridis_c() function was used to color the points by SMAFQI.
+
+We then began a machine learning workflow. First, we set a seed for reproducibility and split the data into an 80% training and 20% testing set. Additionally, a 10-fold cross-validation dataset was created. To preprocess the data recipe() was used to define a series of data preprocessing steps. Next, five different models were built, a workflow_set() was created using the 5 models, and each one was fit to the training data. Their performance was compared using autoplot() and rank_results(). The highest performing model, which was the nearest neighbor model, was then used to build a final workflow on the full training data. The augment() function was then used to make predictions on the test data. To evaluate the final model’s performance metrics() was used and an observed vs predicted scatter plot was made.
+
+## Results
+
+```{r, message=FALSE, warning=FALSE}
+# Load and inspect data
+library(tidyverse)
+library(tidymodels)
+
+integrative_measures_raw <- read_csv("/Users/Avery/github/Final-Project/data/SES_On-Station_Integrative_Measures_SMAF.csv")
+soil_properties_raw <- read_csv("/Users/Avery/github/Final-Project/data/SES_On-Station_Soil_Properties_Near_Surface.csv")
+
+glimpse(integrative_measures_raw)
+glimpse(soil_properties_raw)
+```
+
+```{r, message=FALSE, warning=FALSE}
+# Merge dataset
+library(dplyr)
+
+merged_data <- left_join(integrative_measures_raw, soil_properties_raw, by = c("STUDY", "LTEXP", "TRT", "LAND_USE", "YEAR", "REP", "DEPTH"))
+```
+
+```{r, message=FALSE, warning=FALSE}
+# Understand Data Structure – Check types, dimensions, missing values
+glimpse(merged_data)
+```
+
+```{r, message=FALSE, warning=FALSE}
+# Identify Data Issues – Outliers, missing data, inconsistencies
+library(visdat)
+vis_dat(merged_data)
+vis_miss(merged_data)
+```
+
+```{r, message=FALSE, warning=FALSE}
+# Clean data
+data_clean <- merged_data |>
+  select(-VESS, -TOC)
+```
+
+```{r, message=FALSE, warning=FALSE}
+# Summary Statistics – Mean, median, variance, skewness, kurtosis
+summary(data_clean)
+library(skimr)
+skim(data_clean)
+```
+
+```{r, message=FALSE, warning=FALSE}
+# Separating numeric data into a new dataset
+numeric_data <- data_clean |>
+  select(where(is.numeric))
+
+vis_cor(numeric_data)
+```
+
+```{r, message=FALSE, warning=FALSE}
+data_clean |>
+  select(WSA, UREASE, SMAFSQI, BGLU, TFAME, PHOS, BACSUM) |>
+  cor()
+
+data_clean |>
+  select(SMAFSQI, BGLU, BACSUM) |>
+  cor()
+```
+
+```{r, message=FALSE, warning=FALSE}
+library(ggpubr)
+
+ggarrange(gghistogram(data_clean$WSA, title = "WSA", bins = 20), gghistogram(data_clean$UREASE, title = "UREASE", bins = 20), gghistogram(data_clean$SMAFSQI, title = "SMAFSQI", bins = 20), gghistogram(data_clean$BGLU, title = "BGLU", bins = 20), gghistogram(data_clean$TFAME, title = "TFAME", bins = 20), gghistogram(data_clean$PHOS, title = "PHOS", bins = 20), gghistogram(data_clean$BACSUM, title = "BACSUM", bins = 20))
+```
+
+```{r, message=FALSE, warning=FALSE}
+# boxplot plot of soil quality index by long-term experiment 
+ggplot(data_clean, aes(x = LTEXP, y = SMAFSQI)) +
+  geom_boxplot(fill = "skyblue", color = "black") +
+  theme_minimal() +
+  labs(
+    title = "Soil Quality Index by Management Practice",
+    x = "Management Practice (LTEXP)",
+    y = "SMAFSQI"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# density plot of variables by management practice/treatment type
+ggplot(data_clean, aes(x = SMAFSQI, fill = LTEXP)) +
+  geom_density(alpha = 0.5) +
+  theme_minimal() +
+  labs(
+    title = "Density of SMAFSQI by Management Practice",
+    x = "Soil Quality Index (SMAFSQI)",
+    fill = "Management Practice"
+  )
+
+ggplot(data_clean, aes(x = BGLU, fill = LTEXP)) +
+  geom_density(alpha = 0.5) +
+  theme_minimal() +
+  labs(
+    title = "Density of SMAFSQI by Management Practice",
+    x = "BGLU",
+    fill = "Management Practice"
+  )
+
+ggplot(data_clean, aes(x = BACSUM, fill = LTEXP)) +
+  geom_density(alpha = 0.5) +
+  theme_minimal() +
+  labs(
+    title = "Density of SMAFSQI by Management Practice",
+    x = "BACSUM",
+    fill = "Management Practice"
+  )
+
+# violin plots
+SMAFSQI_type_violin <- ggviolin(data_clean, x = "TRT", y = "SMAFSQI", add = "boxplot", color = "TRT")
+BGLU_type_violin <- ggviolin(data_clean, x = "TRT", y = "BGLU", add = "boxplot", color = "TRT")
+BACSUM_type_violin <- ggviolin(data_clean, x = "TRT", y = "BACSUM", add = "boxplot", color = "TRT")
+
+SMAFSQI_landuse_violin <- ggviolin(data_clean, x = "LAND_USE", y = "SMAFSQI", add = "boxplot", color = "LAND_USE")
+BGLU_landuse_violin <- ggviolin(data_clean, x = "LAND_USE", y = "BGLU", add = "boxplot", color = "LAND_USE")
+BACSUM_landuse_violin <- ggviolin(data_clean, x = "LAND_USE", y = "BACSUM", add = "boxplot", color = "LAND_USE")
+
+library(patchwork)
+combined_violins <- SMAFSQI_landuse_violin / BGLU_landuse_violin / BACSUM_landuse_violin
+ggsave("images/combined_violins.png", plot = combined_violins, width = 18, height = 23)
+```
+
+Violin plots (Figure 1) further showed how BGLU, BACSUM, and SMAFSQI were spread out across LAND_USE. In near-surface soil, grazed and ungrazed continuous cropping showed high median values and narrower distributions for SMAFSQI. Likewise, for BGLU and BACSUM, grazed continuous cropping promoted higher β-glucosidase activity and bacterial activity. Hence, Figure 5 illustrates that continuous cropping, especially when grazed, consistently supports higher soil quality. In contrast, across all three indicators (BGLU, BACSUM, and SMAFSQI), spring wheat-fallow systems displayed the lowest medians with a wider spread. Signifying that fallow-based systems may reduce microbial activity and soil quality.
+
+![Figure 1](images/combined_violins.png)
+
+```{r, message=FALSE, warning=FALSE}
+# Assessing Normality
+shapiro.test(data_clean$SMAFSQI)
+shapiro.test(data_clean$BGLU)
+shapiro.test(data_clean$BACSUM)
+```
+
+```{r, message=FALSE, warning=FALSE}
+# normality test on log transformed variables 
+shapiro.test(log(data_clean$SMAFSQI))
+shapiro.test(log(data_clean$BGLU))
+shapiro.test(log(data_clean$BACSUM))
+
+ggarrange(gghistogram(log(data_clean$SMAFSQI), title = "SMAFSQI", bins = 20), gghistogram(log(data_clean$BGLU), title = "BGLU", bins = 20), gghistogram(log(data_clean$BACSUM), title = "BACSUM", bins = 20))
+```
+
+```{r, message=FALSE, warning=FALSE}
+# Correlation
+
+# Pearson’s correlation test, works on normally distributed data
+cor.test(log(data_clean$BGLU), log(data_clean$BACSUM))
+
+# Spearman correlation test, works on non-parametric and non-linear data sets
+cor.test(data_clean$BGLU, data_clean$BACSUM, method = "spearman")
+cor.test(data_clean$BGLU, data_clean$SMAFSQI, method = "spearman")
+cor.test(data_clean$SMAFSQI, data_clean$BACSUM, method = "spearman")
+```
+
+Spearman’s rank correlation revealed moderately strong relationships between the variables BGLU, BACSUM, and SMAFSQI. Beta-Glucosidase Activity (BGLU) had a strong positive correlation with Soil Quality Index Score (SMAFSQI) (ρ = 0.88, p \< 2.2e-16), suggesting that greater β-glucosidase activity was associated with improved soil quality. Bacteria Marker FAME (BACSUM) had a moderate positive correlation with SMAFSQI (ρ = 0.59, p \< 6.14e-08), proposing that increasing bacterial FAME could lead to an increase in soil quality. Similarly, BGLU and BACSUM were moderately correlated with each other (ρ = 0.54, p \< 1.54e-06). Each relation had a p-value of \< 0.05, indicating that each correlation was statistically significant (Figure 2).
+
+![Figure 2](images/Spearman.png){width="284"}
+
+```{r, message=FALSE, warning=FALSE}
+# Kruskal-Wallis rank sum test
+kruskal.test(SMAFSQI ~ LAND_USE, data = data_clean)
+kruskal.test(BGLU ~ LAND_USE, data = data_clean)
+kruskal.test(BACSUM ~ LAND_USE, data = data_clean)
+
+# Kruskal-Wallis rank sum test
+kruskal.test(SMAFSQI ~ LTEXP, data = data_clean)
+kruskal.test(BGLU ~ LTEXP, data = data_clean)
+kruskal.test(BACSUM ~ LTEXP, data = data_clean)
+```
+
+Kruskal-Wallis tests indicated that BGLU, BACSUM, and SMAFSQI significantly varied across different land use practices (LAND_USE) and management treatments (LTEXP). Across land use practices, SMAFSQI differed significantly for each practice (p = 5.99e-11), along with BGLU (p = 2.41e-08) and BACSUM (p = 1.08e-06) (Figure 3). Similarly, significant variability was found across management treatments for SMAFSQI (p = 3.68e-12), BGLU (p = 8.18e-10), and BACSUM (p = 2.50e-06) (Figure 3). The test results support the assumption that management strategies affect both soil properties and soil quality.
+
+![Figure 3](images/Kruskal-Wallis.png){width="320"}
+
+```{r, message=FALSE, warning=FALSE}
+log_visualization <- ggplot(data_clean, aes(x = BGLU, y = BACSUM)) +
+  geom_point(aes(color = SMAFSQI)) +
+  geom_smooth(method = "lm") +
+  scale_color_viridis_c() +
+  # Apply log transformations to the x and y axes
+  scale_x_log10() + 
+  scale_y_log10() +
+  theme_linedraw() +
+  theme(legend.position = "bottom") + 
+  labs(title = "Beta-Glucosidase Activity vs Bacteria-marker FAME vs Soil Quality Index Score", 
+       x = "Beta-Glucosidase Activity", 
+       y = "Bacteria-marker FAME",
+       color = "Soil Quality Index Score")
+
+ggsave("images/log_visualization.png", plot = log_visualization, width = 8, height = 7, units = "in")
+```
+
+The scatterplot of BGLU and BACSUM, whose points were colored by SMAFSQI, visually represented these correlations. The plot showed a gradient of soil quality scores. The higher soil quality scores generally clustered where both BGLU and BACSUM were high. Whereas the lower soil quality scores were gathered in areas of low BGLU and BACSUM (Figure 4). Signifying that BGLU and BACSUM could be used to predict the soil quality score.
+
+![Figure 4](images/log_visualization.png)
+
+```{r, message=FALSE, warning=FALSE}
+set.seed(123)
+
+data_split <- initial_split(data_clean, prop = 0.8)
+train_data <- training(data_split)
+test_data  <- testing(data_split)
+
+cv <- vfold_cv(train_data, v = 10)
+```
+
+```{r, message=FALSE, warning=FALSE}
+soil_recipe <- recipe(SMAFSQI ~ BGLU + BACSUM, data = train_data) |>
+  step_log(all_predictors()) |>
+  step_interact(terms = ~ BGLU:BACSUM) |>
+  step_naomit(all_predictors(), all_outcomes())
+```
+
+```{r, message=FALSE, warning=FALSE}
+lm_model <- linear_reg() |>
+  set_engine('lm') |>
+  set_mode("regression")
+
+rf_model <- rand_forest() |>
+  set_engine("ranger", importance = "impurity") |>
+  set_mode("regression")
+
+bt_model <- boost_tree() |>
+  set_engine("xgboost") |>
+  set_mode("regression")
+
+bag_model <- bag_mlp() |>
+  set_engine("nnet") |>
+  set_mode("regression")
+
+nn_model <- nearest_neighbor() |>
+  set_engine("kknn") |>
+  set_mode("regression")
+```
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(tidymodels)
+library(powerjoin)
+library(glue)
+library(vip)
+library(baguette)
+
+wf_set <- workflow_set(list(soil_recipe), list(lm_model, rf_model, bt_model, bag_model, nn_model)) |>
+  workflow_map('fit_resamples', resamples = cv)
+
+autoplot(wf_set)
+rank_results(wf_set, rank_metric = "rsq", select_best = TRUE)
+```
+
+```{r, message=FALSE, warning=FALSE}
+final_fit <- workflow() |>
+  add_recipe(soil_recipe) |>
+  add_model(nn_model) |>
+  fit(data = train_data)
+
+final_preds <- augment(final_fit, new_data = test_data)
+
+metrics(final_preds, truth = SMAFSQI, estimate = .pred)
+
+# Create a plot of the observed vs predicted values with clear title, axis labels, and a compelling color scale
+final_model_fit <- ggplot(final_preds, aes(x = SMAFSQI, y = .pred, colour = SMAFSQI)) +
+  scale_color_viridis_c() +
+  geom_point() +
+  geom_abline() +
+  theme_linedraw() +
+  labs(title = "Observed vs Predicted Soil Quality Index Score",
+       x = "Observed",
+       y = "Predicted")
+
+ggsave("images/final_model_fit.png", plot = final_model_fit, width = 10, height = 7, units = "in")
+```
+
+Among the five machine learning models evaluated, the nearest neighbor model showed the best performance. The final fitted model had an RMSE of 1.98 and an R² of 0.93. These results suggest a strong relationship between BGLU and BACSUM as predictors for SMAFSQI. The observed vs. predicted scatterplot (Figure 5) exhibited a clustering of data points along the 1:1 reference line, thus indicating a very strong model fit with minimal deviation.
+
+![Figure 5](images/final_model_fit.png)
+
+## Discussion/Conclusion
+
+Our main findings support the hypothesis that crop-livestock integration and the use of cover crops result in significantly higher soil quality index scores in rainfed Northern Great Plains systems. These conservation practices stimulate microbial activity and enhance soil biological structure, offering a resilient path forward for sustainable dryland agriculture. Diversification and cover cropping support soil function and microbial activity. With these conservation practices, the increase of BGLU and BACSUM is observed, leading to the conclusion that the two variables can be used to predict the soil quality score. Additional findings from our research tell us that fallow-based methods are linked to a decrease in microbial activity. This is a method that is widely utilized in agricultural areas, as it restores organic matter, but this restoration ultimately falls below the performance of continuous cropping and diversification.
+
+Other research from (@miner2020soil) suggests that environmental benefits from crop diversity are regionally specific, with agroecosystems globally being very different. Due to this, it cannot be said for all agricultural systems that diversification and the use of cover crops will increase yield production and SQIs. However, for the rainfed croplands of Bismarck, North Dakota, this is the expected outcome. Our data and study suggest that biological pathways, like microbial stimulation from plant diversity, could support yield improvements. This microbial stimulation from plant diversity is supported by others, as Jalloh states, as it is associated with decomposition, carbon utilization, and nitrogen fixation, all key components of helping the stability of an ecosystem (@jalloh2024long).
+
+The major limitation of this study was the small sample size of the data we had to work with. There were many difficulties at the beginning of our study that led us to change the scope of the study itself. Due to this small sample size, we were unable to see the desired results through our preliminary testing. Many tests fell short, specifically correlation tests, with there simply not being enough data in the originally used datasets. Because of this issue, we were forced to change our original hypothesis to align with newly found datasets. Another issue we encountered with the datasets was the time scale they offered. While one dataset we used had sufficient data for multiple years, other datasets with very similar data would have inputs from only one year. This lack of consistency proved to be more of a challenge for us than we anticipated.
+
+For future studies, we recommend a larger sample size. As well as expanding the study outside of the small cropland in North Dakota. The smaller spatial scale was beneficial for our study, as we had limited time to collect data and work with it, but to determine which conservation practices would be beneficial for other types of biomes and ecosystems, more studies specific to different locations need to be done, as one method that works for one ecosystem may not work for another.
+
+This study supports shifting from traditional practices to conservation practices like cover cropping and diversified rotations that maintain or improve SQIs for long-term sustainability. Although concerns for crop yield and production are widespread, yield efficiency is likely to increase as the soil quality and health improve. The SQIs can be utilized to determine what will help soil health and function in an agricultural system, which will, in turn, help the production and efficiency of crops.
