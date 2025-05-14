@@ -15,7 +15,6 @@ csl: apa.csl
 format:
   html:
     code-fold: true
-    code-fold-show: false
     code-tools: true
 execute:
   echo: true
@@ -45,7 +44,7 @@ We then began a machine learning workflow. First, we set a seed for reproducibil
 
 ## Results
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, results: hide}
 # Load and inspect data
 library(tidyverse)
 library(tidymodels)
@@ -57,39 +56,39 @@ glimpse(integrative_measures_raw)
 glimpse(soil_properties_raw)
 ```
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, results: hide}
 # Merge dataset
 library(dplyr)
 
 merged_data <- left_join(integrative_measures_raw, soil_properties_raw, by = c("STUDY", "LTEXP", "TRT", "LAND_USE", "YEAR", "REP", "DEPTH"))
 ```
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, results: hide}
 # Understand Data Structure – Check types, dimensions, missing values
 glimpse(merged_data)
 ```
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, results: hide}
 # Identify Data Issues – Outliers, missing data, inconsistencies
 library(visdat)
 vis_dat(merged_data)
 vis_miss(merged_data)
 ```
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, results: hide}
 # Clean data
 data_clean <- merged_data |>
   select(-VESS, -TOC)
 ```
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, results: hide}
 # Summary Statistics – Mean, median, variance, skewness, kurtosis
 summary(data_clean)
 library(skimr)
 skim(data_clean)
 ```
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, results: hide}
 # Separating numeric data into a new dataset
 numeric_data <- data_clean |>
   select(where(is.numeric))
@@ -97,23 +96,25 @@ numeric_data <- data_clean |>
 vis_cor(numeric_data)
 ```
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, results: hide}
 data_clean |>
   select(WSA, UREASE, SMAFSQI, BGLU, TFAME, PHOS, BACSUM) |>
   cor()
+```
 
+```{r, message=FALSE, warning=FALSE, results: hide}
 data_clean |>
   select(SMAFSQI, BGLU, BACSUM) |>
   cor()
 ```
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, results: hide}
 library(ggpubr)
 
 ggarrange(gghistogram(data_clean$WSA, title = "WSA", bins = 20), gghistogram(data_clean$UREASE, title = "UREASE", bins = 20), gghistogram(data_clean$SMAFSQI, title = "SMAFSQI", bins = 20), gghistogram(data_clean$BGLU, title = "BGLU", bins = 20), gghistogram(data_clean$TFAME, title = "TFAME", bins = 20), gghistogram(data_clean$PHOS, title = "PHOS", bins = 20), gghistogram(data_clean$BACSUM, title = "BACSUM", bins = 20))
 ```
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, results: hide}
 # boxplot plot of soil quality index by long-term experiment 
 ggplot(data_clean, aes(x = LTEXP, y = SMAFSQI)) +
   geom_boxplot(fill = "skyblue", color = "black") +
@@ -171,14 +172,14 @@ Violin plots (Figure 1) further showed how BGLU, BACSUM, and SMAFSQI were spread
 
 ![Figure 1](images/combined_violins.png)
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, results: hide}
 # Assessing Normality
 shapiro.test(data_clean$SMAFSQI)
 shapiro.test(data_clean$BGLU)
 shapiro.test(data_clean$BACSUM)
 ```
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, results: hide}
 # normality test on log transformed variables 
 shapiro.test(log(data_clean$SMAFSQI))
 shapiro.test(log(data_clean$BGLU))
@@ -187,7 +188,7 @@ shapiro.test(log(data_clean$BACSUM))
 ggarrange(gghistogram(log(data_clean$SMAFSQI), title = "SMAFSQI", bins = 20), gghistogram(log(data_clean$BGLU), title = "BGLU", bins = 20), gghistogram(log(data_clean$BACSUM), title = "BACSUM", bins = 20))
 ```
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, results: hide}
 # Correlation
 
 # Pearson’s correlation test, works on normally distributed data
@@ -203,7 +204,7 @@ Spearman’s rank correlation revealed moderately strong relationships between t
 
 ![Figure 2](images/Spearman.png){width="284"}
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, results: hide}
 # Kruskal-Wallis rank sum test
 kruskal.test(SMAFSQI ~ LAND_USE, data = data_clean)
 kruskal.test(BGLU ~ LAND_USE, data = data_clean)
@@ -219,7 +220,7 @@ Kruskal-Wallis tests indicated that BGLU, BACSUM, and SMAFSQI significantly vari
 
 ![Figure 3](images/Kruskal-Wallis.png){width="320"}
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, results: hide}
 log_visualization <- ggplot(data_clean, aes(x = BGLU, y = BACSUM)) +
   geom_point(aes(color = SMAFSQI)) +
   geom_smooth(method = "lm") +
@@ -241,7 +242,7 @@ The scatterplot of BGLU and BACSUM, whose points were colored by SMAFSQI, visual
 
 ![Figure 4](images/log_visualization.png)
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, results: hide}
 set.seed(123)
 
 data_split <- initial_split(data_clean, prop = 0.8)
@@ -251,14 +252,14 @@ test_data  <- testing(data_split)
 cv <- vfold_cv(train_data, v = 10)
 ```
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, results: hide}
 soil_recipe <- recipe(SMAFSQI ~ BGLU + BACSUM, data = train_data) |>
   step_log(all_predictors()) |>
   step_interact(terms = ~ BGLU:BACSUM) |>
   step_naomit(all_predictors(), all_outcomes())
 ```
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, results: hide}
 lm_model <- linear_reg() |>
   set_engine('lm') |>
   set_mode("regression")
@@ -280,7 +281,7 @@ nn_model <- nearest_neighbor() |>
   set_mode("regression")
 ```
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, results: hide}
 library(tidyverse)
 library(tidymodels)
 library(powerjoin)
@@ -295,7 +296,7 @@ autoplot(wf_set)
 rank_results(wf_set, rank_metric = "rsq", select_best = TRUE)
 ```
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, results: hide}
 final_fit <- workflow() |>
   add_recipe(soil_recipe) |>
   add_model(nn_model) |>
